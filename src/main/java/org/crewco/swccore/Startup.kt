@@ -27,6 +27,7 @@ import org.crewco.swccore.Bounties.utils.api.bounty.BountyAPI
 import org.crewco.swccore.system.managers.AddonManager
 import org.crewco.swccore.PCS.utils.NationDBManager
 import org.crewco.swccore.system.commands.ReloadSwcConfig
+import org.crewco.swccore.system.managers.CommandManager
 import java.io.File
 
 
@@ -34,12 +35,14 @@ class Startup : JavaPlugin() {
     companion object{
         lateinit var plugin: Startup
             private set
+        lateinit var commandManager: CommandManager
+            private set
+        lateinit var addonManager: AddonManager
         lateinit var nationDBMgr: NationDBManager
         lateinit var economy: Economy
         lateinit var bountyManager: BountyManager
         lateinit var sysMsg: String
         lateinit var bountyAPI: BountyAPI
-        lateinit var addonManager: AddonManager
 
     }
 
@@ -47,6 +50,7 @@ class Startup : JavaPlugin() {
     override fun onLoad(){
         // Initialize the addon manager
         addonManager = AddonManager()
+        commandManager = CommandManager(this)
 
         // Load addons from the addons dir
         val addonsFolder = File(dataFolder, "addons")
@@ -58,9 +62,7 @@ class Startup : JavaPlugin() {
     override fun onEnable() {
         super.onEnable()
         // Plugin startup logic
-
         //Intilizers
-
         //Updating Block
         if (!Updater.isUpdated()){
             Updater.checkAndUpdate(this)

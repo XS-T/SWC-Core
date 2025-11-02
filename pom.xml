@@ -6,9 +6,9 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.crewco</groupId>
-    <artifactId>SWC-Core</artifactId>
-    <version>0.0.2</version>
+    <groupId>org.xs-t</groupId>
+    <artifactId>swc-core</artifactId>
+    <version>0.0.3-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>SWC-Core</name>
@@ -223,5 +223,13 @@
             </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>SWC-Core</name>
+            <url>https://maven.pkg.github.com/XS-T/SWC-Core</url>
+        </repository>
+    </distributionManagement>
 
 </project>
