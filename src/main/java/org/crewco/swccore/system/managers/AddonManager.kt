@@ -1,18 +1,18 @@
 package org.crewco.swccore.system.managers
 
-
-import org.crewco.swccore.Startup.Companion.plugin
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.plugin.Plugin
+import org.crewco.swccore.Startup
 import org.crewco.swccore.api.addon.Addon
 import java.io.File
+import java.io.InputStreamReader
 import java.net.URLClassLoader
 import java.util.jar.JarFile
 
 /**
  * Manages the loading, enabling, disabling, and unloading of addons.
  */
-
-class AddonManager {
+class AddonManager(private val plugin: Startup) {
 
     private val addons = mutableMapOf<String, Addon>()
     private val addonFiles = mutableMapOf<String, File>()
@@ -92,11 +92,22 @@ class AddonManager {
     private fun loadAddonFromJar(jarFile: File) {
         try {
             val jarFileObj = JarFile(jarFile)
-            val manifest = jarFileObj.manifest
-            val mainClass = manifest?.mainAttributes?.getValue("Addon-Main")
 
+            // First, try to find manifest.yml
+            val manifestEntry = jarFileObj.getEntry("manifest.yml")
+
+            if (manifestEntry == null) {
+                plugin.logger.warning("${jarFile.name} does not have a manifest.yml file")
+                return
+            }
+
+            // Read and parse manifest.yml
+            val manifestStream = jarFileObj.getInputStream(manifestEntry)
+            val manifestConfig = YamlConfiguration.loadConfiguration(InputStreamReader(manifestStream))
+
+            val mainClass = manifestConfig.getString("main")
             if (mainClass == null) {
-                plugin.logger.warning("${jarFile.name} does not have an Addon-Main attribute in MANIFEST.MF")
+                plugin.logger.warning("${jarFile.name} manifest.yml does not have a 'main' entry")
                 return
             }
 

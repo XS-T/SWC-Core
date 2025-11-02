@@ -1,4 +1,4 @@
-package org.crewco.swccore.api.addon
+package org.crewco.swccore.api.addon.subclasses
 
 import org.crewco.swccore.system.managers.CommandManager
 

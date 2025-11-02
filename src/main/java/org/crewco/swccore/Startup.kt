@@ -35,38 +35,39 @@ class Startup : JavaPlugin() {
     companion object{
         lateinit var plugin: Startup
             private set
-        lateinit var commandManager: CommandManager
-            private set
-        lateinit var addonManager: AddonManager
         lateinit var nationDBMgr: NationDBManager
         lateinit var economy: Economy
         lateinit var bountyManager: BountyManager
         lateinit var sysMsg: String
         lateinit var bountyAPI: BountyAPI
-
     }
 
+    // Instance properties (not companion) - accessible to addons
+    lateinit var addonManager: AddonManager
+    lateinit var commandManager: CommandManager
 
     override fun onLoad(){
-        // Initialize the addon manager
-        addonManager = AddonManager()
+        // Initialize command manager FIRST (before addons need it)
         commandManager = CommandManager(this)
+        logger.info("CommandManager initialized")
+
+        // Initialize the addon manager
+        addonManager = AddonManager(this)
+        logger.info("AddonManager initialized")
 
         // Load addons from the addons dir
         val addonsFolder = File(dataFolder, "addons")
         addonManager.loadAddonsFromDirectory(addonsFolder)
-
     }
-
 
     override fun onEnable() {
         super.onEnable()
         // Plugin startup logic
         //Intilizers
         //Updating Block
-        if (!Updater.isUpdated()){
-            Updater.checkAndUpdate(this)
-        }
+        // if (!Updater.isUpdated()){
+        //     Updater.checkAndUpdate(this)
+        // }
 
         CommandRegistrar.initialize(this)
         EventListenerRegistrar.initialize(this)
@@ -74,12 +75,10 @@ class Startup : JavaPlugin() {
         plugin = this
         nationDBMgr = NationDBManager(plugin.dataFolder)
 
-
         // Managers
         bountyManager = BountyManager(this.config)
         bountyManager.loadAndScheduleExpiryTasks()
         bountyManager.loadTrackingData()
-
 
         // Register API
         bountyAPI = BountyAPI()
@@ -119,14 +118,15 @@ class Startup : JavaPlugin() {
         registerListeners(BountyListener::class, BountyBoardListener::class)
         plugin.logger.info("Registered Listeners")
 
-
         //Gen Config
         plugin.saveDefaultConfig()
 
         // Enable all loaded addons
+        logger.info("Enabling addons...")
         addonManager.enableAddons()
+        logger.info("Addons enabled")
 
-        // Register commands, listeners etc.
+        // Register addon management commands
         setupCommands()
 
         logger.info("${description.name} has been enabled!")
@@ -135,6 +135,14 @@ class Startup : JavaPlugin() {
     override fun onDisable() {
         super.onDisable()
         // Plugin shutdown logic
+
+        logger.info("Disabling addons...")
+        // Disable all addons
+        addonManager.disableAddons()
+
+        // Unregister all dynamically registered commands
+        commandManager.unregisterAll()
+
         server.servicesManager.unregisterAll(this)
         importFromTowny(nationDBMgr)
         nationDBMgr.close()
@@ -152,8 +160,9 @@ class Startup : JavaPlugin() {
 
         // Close the database connection
         bountyManager.close()
-    }
 
+        logger.info("${description.name} has been disabled!")
+    }
 
     private fun setupCommands() {
         // Example command to manage addons
@@ -218,7 +227,6 @@ class Startup : JavaPlugin() {
         }
     }
 
-
     private fun setupEconomy(): Boolean {
         if (server.pluginManager.getPlugin("Vault") == null) {
             return false
@@ -230,7 +238,6 @@ class Startup : JavaPlugin() {
         economy = rsp.provider
         return true
     }
-
 
     fun importFromTowny(db: NationDBManager) {
         val universe = TownyUniverse.getDataSource()

@@ -1,8 +1,7 @@
-name: SWCTownyHook
+name: SWCCore
 version: ${project.version}
-main: org.crewco.swcTowny.Startup
+main: org.crewco.swccore.Startup
 description: "A Template Plugin for 1.7.10"
-author: "XST99"
 authors:
   - "XST99"
 depend: [Towny]
@@ -26,3 +25,8 @@ commands:
     description: allows the player to set a bounty on another
   swcBountyUpdate:
     description: Allows an admin to update the plugin
+  addon:
+    description: Manage addons
+    usage: /addon [list|reload|info] [addon-id]
+    permission: yourplugin.addon
+    permission-message: You don't have permission to manage addons

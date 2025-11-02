@@ -2,9 +2,10 @@ package org.crewco.swccore.api.addon
 
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.TabCompleter
+import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
 import org.crewco.swccore.system.managers.CommandManager
-import org.crewco.swccore.system.managers.SimpleCommand
+import org.crewco.swccore.system.managers.subclasses.SimpleCommand
 import java.io.File
 import java.util.logging.Logger
 
@@ -16,8 +17,11 @@ abstract class AbstractAddon(override val plugin: Plugin) : Addon {
 
     /**
      * Logger instance for this addon
+     * Lazily initialized to avoid NPE during construction
      */
-    protected val logger: Logger = Logger.getLogger(name)
+    protected val logger: Logger by lazy {
+        Logger.getLogger(name)
+    }
 
     /**
      * Data folder for this addon's files
@@ -30,11 +34,20 @@ abstract class AbstractAddon(override val plugin: Plugin) : Addon {
 
     /**
      * Command manager for registering commands dynamically
+     * Uses reflection to avoid classloader issues
      */
-    protected val commandManager: CommandManager by lazy {
-        (plugin as? SWC_Core)?.commandManager
-            ?: throw IllegalStateException("Plugin does not provide CommandManager")
-    }
+    protected val commandManager: CommandManager
+        get() {
+            return try {
+                val field = plugin.javaClass.getDeclaredField("commandManager")
+                field.isAccessible = true
+                field.get(plugin) as CommandManager
+            } catch (e: NoSuchFieldException) {
+                throw IllegalStateException("Plugin does not have commandManager field", e)
+            } catch (e: Exception) {
+                throw IllegalStateException("Failed to access commandManager: ${e.message}", e)
+            }
+        }
 
     /**
      * Whether this addon is currently enabled
@@ -57,16 +70,36 @@ abstract class AbstractAddon(override val plugin: Plugin) : Addon {
         logger.info("Disabling addon: $name v$version")
 
         // Unregister all commands registered by this addon
-        registeredCommands.forEach { commandName ->
-            commandManager.unregisterCommand(commandName)
+        try {
+            registeredCommands.forEach { commandName ->
+                commandManager.unregisterCommand(commandName)
+            }
+            registeredCommands.clear()
+        } catch (e: Exception) {
+            logger.warning("Failed to unregister commands: ${e.message}")
         }
-        registeredCommands.clear()
 
         isEnabled = false
     }
 
     override fun onReload() {
         logger.info("Reloading addon: $name")
+    }
+
+    /**
+     * Helper method to register multiple event listeners at once
+     *
+     * @param listeners Vararg of Listener instances to register
+     */
+    protected fun registerEvents(vararg listeners: Listener) {
+        listeners.forEach { listener ->
+            try {
+                plugin.server.pluginManager.registerEvents(listener, plugin)
+                logInfo("Registered listener: ${listener::class.java.simpleName}")
+            } catch (e: Exception) {
+                logError("Failed to register listener: ${listener::class.java.simpleName}", e)
+            }
+        }
     }
 
     /**
@@ -89,11 +122,19 @@ abstract class AbstractAddon(override val plugin: Plugin) : Addon {
         aliases: List<String> = emptyList(),
         tabCompleter: TabCompleter? = null
     ): Boolean {
-        val success = commandManager.registerCommand(name, executor, description, usage, aliases, tabCompleter)
-        if (success) {
-            registeredCommands.add(name)
+        return try {
+            val success = commandManager.registerCommand(name, executor, description, usage, aliases, tabCompleter)
+            if (success) {
+                registeredCommands.add(name)
+                logInfo("Registered command: /$name")
+            } else {
+                logWarning("Failed to register command: /$name")
+            }
+            success
+        } catch (e: Exception) {
+            logError("Error registering command /$name", e)
+            false
         }
-        return success
     }
 
     /**
@@ -113,21 +154,21 @@ abstract class AbstractAddon(override val plugin: Plugin) : Addon {
     /**
      * Helper method to log info messages
      */
-    protected fun logInfo(message: String) {
+    fun logInfo(message: String) {
         logger.info("[$name] $message")
     }
 
     /**
      * Helper method to log warning messages
      */
-    protected fun logWarning(message: String) {
+     fun logWarning(message: String) {
         logger.warning("[$name] $message")
     }
 
     /**
      * Helper method to log error messages
      */
-    protected fun logError(message: String, throwable: Throwable? = null) {
+     fun logError(message: String, throwable: Throwable? = null) {
         logger.severe("[$name] $message")
         throwable?.printStackTrace()
     }
