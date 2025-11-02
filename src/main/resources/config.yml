@@ -1,0 +1,52 @@
+# Cooldown time between resource claims
+# Supports: s (seconds), m (minutes), h (hours), d (days), w (weeks)
+claimCooldown: "1W"
+
+# Updater URL (optional)
+updater_url: ""
+
+# Resource configuration per world
+# World names MUST match your server's world folder names exactly
+resources:
+  
+  # Main overworld resources
+  world:
+    # Container type (CHEST, TRAPPED_CHEST, etc.) - optional, defaults to CHEST
+    containerType: "CHEST"
+    items:
+      IRON_INGOT: 32
+      GOLD_INGOT: 16
+      DIAMOND: 8
+      COAL: 64
+      EMERALD: 4
+      REDSTONE: 48
+      # Modded items use format: ModID:ItemName
+      ComputerCraft:CC-Computer: 5
+      ComputerCraft:CC-Peripheral: 10
+
+# ===== CONFIGURATION NOTES =====
+#
+# 1. World Names:
+#    - Must EXACTLY match your world folder names
+#    - Common names: world, world_nether, world_the_end
+#    - Custom dimensions: DIM-1 (nether), DIM1 (end), DIM2, DIM7, etc.
+#
+# 2. Cooldown Format:
+#    - Examples: "30s", "5m", "2h", "7d", "2w"
+#    - Case insensitive: "1W" = "1w"
+#
+# 3. Item Format:
+#    - Vanilla items: Use Bukkit Material names (IRON_INGOT, DIAMOND, etc.)
+#    - Modded items: Use format ModID:ItemName (ComputerCraft:CC-Computer)
+#    - Find Material names: https://hub.spigotmc.org/javadocs/bukkit/org/bukkit/Material.html
+#
+# 4. Amounts:
+#    - Integer values only
+#    - Maximum stack size still applies when depositing
+#
+# 5. How It Works:
+#    - Players must be in a nation
+#    - Nation must be the "leading nation" for that world
+#    - Command: /claimresources (or whatever you register)
+#    - Items are added to player's inventory
+#    - Cooldown applies per-world, per-nation

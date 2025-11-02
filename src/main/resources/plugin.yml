@@ -1,0 +1,24 @@
+name: SWCTownyHook
+version: ${project.version}
+main: org.crewco.swcTowny.Startup
+description: "A Template Plugin for 1.7.10"
+author: "XST99"
+authors:
+  - "XST99"
+depend: [Towny]
+
+commands:
+  reloadconfig:
+    description: Reload recipes command
+    usage: /reloadconfig
+  listdata:
+    description: List Town Data
+    usage: /listdata <nation>
+  leadingNation:
+    description: List Leading Nation Per world
+    usage: /leadingNation
+  claimResources:
+    description: Claim the resources as the Nation Leader
+    usage: /claimResources
+  swcTownyUpdate:
+    description: updates the plugin

@@ -1,0 +1,15 @@
+recipes:
+  emerald_pickaxe:
+    resultMaterial: DIAMOND_PICKAXE
+    displayName: "Emerald Pickaxe"
+    shape:
+      - "EEE"
+      - " S "
+      - " S "
+    ingredients:
+      E: EMERALD
+      S: STICK
+    enchantments:
+      DAMAGE_ALL: 5
+    lore:
+      - "Powerful pickaxe with emeralds"
