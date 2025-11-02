@@ -165,39 +165,139 @@ class Startup : JavaPlugin() {
     }
 
     private fun setupCommands() {
-        // Example command to manage addons
         getCommand("addon")?.setExecutor { sender, _, _, args ->
+            // Base permission check
+            if (!sender.hasPermission("swccore.addon")) {
+                sender.sendMessage("§cYou don't have permission to manage addons!")
+                return@setExecutor true
+            }
+
             if (args.isEmpty()) {
-                sender.sendMessage("§eLoaded Addons:")
-                addonManager.getAddons().forEach { addon ->
-                    sender.sendMessage("§7- §a${addon.name} §7v${addon.version} §8(${addon.id})")
+                sender.sendMessage("§e=== SWCCore Addon Manager ===")
+                if (sender.hasPermission("swccore.addon.list")) {
+                    sender.sendMessage("§7/addon list §f- List all addons")
+                }
+                if (sender.hasPermission("swccore.addon.info")) {
+                    sender.sendMessage("§7/addon info <id> §f- Show addon details")
+                }
+                if (sender.hasPermission("swccore.addon.load")) {
+                    sender.sendMessage("§7/addon load <filename> §f- Load an unloaded addon")
+                }
+                if (sender.hasPermission("swccore.addon.unload")) {
+                    sender.sendMessage("§7/addon unload <id> §f- Unload an addon")
+                }
+                if (sender.hasPermission("swccore.addon.enable")) {
+                    sender.sendMessage("§7/addon enable <id> §f- Enable an addon")
+                }
+                if (sender.hasPermission("swccore.addon.disable")) {
+                    sender.sendMessage("§7/addon disable <id> §f- Disable an addon")
+                }
+                if (sender.hasPermission("swccore.addon.reload")) {
+                    sender.sendMessage("§7/addon reload [id] §f- Reload addon(s)")
                 }
                 return@setExecutor true
             }
 
             when (args[0].lowercase()) {
                 "list" -> {
-                    sender.sendMessage("§eLoaded Addons:")
-                    addonManager.getAddons().forEach { addon ->
-                        sender.sendMessage("§7- §a${addon.name} §7v${addon.version}")
-                        sender.sendMessage("   §8${addon.description}")
-                        sender.sendMessage("   §8By: ${addon.authors.joinToString(", ")}")
+                    if (!sender.hasPermission("swccore.addon.list")) {
+                        sender.sendMessage("§cYou don't have permission to list addons!")
+                        return@setExecutor true
                     }
-                }
-                "reload" -> {
-                    if (args.size > 1) {
-                        val addonId = args[1]
-                        if (addonManager.reloadAddon(addonId)) {
-                            sender.sendMessage("§aReloaded addon: $addonId")
-                        } else {
-                            sender.sendMessage("§cFailed to reload addon: $addonId")
+
+                    val allAddons = addonManager.getAllAddonInfo()
+
+                    if (allAddons.isEmpty()) {
+                        sender.sendMessage("§cNo addons found")
+                        return@setExecutor true
+                    }
+
+                    sender.sendMessage("§e=== Addons (${allAddons.size}) ===")
+
+                    allAddons.forEach { info ->
+                        val (statusColor, statusSymbol, statusText) = when (info.state) {
+                            AddonManager.AddonState.ENABLED -> Triple("§a", "●", "ENABLED")
+                            AddonManager.AddonState.DISABLED -> Triple("§7", "●", "DISABLED")
+                            AddonManager.AddonState.LOADED -> Triple("§e", "●", "LOADED")
+                            AddonManager.AddonState.UNLOADED -> Triple("§b", "○", "UNLOADED")
+                            AddonManager.AddonState.FAILED -> Triple("§c", "✗", "FAILED")
                         }
-                    } else {
-                        addonManager.reloadAddons()
-                        sender.sendMessage("§aReloaded all addons")
+
+                        when (info.state) {
+                            AddonManager.AddonState.FAILED -> {
+                                sender.sendMessage("$statusColor$statusSymbol §7${info.fileName} §c[$statusText]")
+                                sender.sendMessage("   §8Error: ${info.errorMessage}")
+                            }
+                            AddonManager.AddonState.UNLOADED -> {
+                                sender.sendMessage("$statusColor$statusSymbol §f${info.name} §7v${info.version} $statusColor[$statusText]")
+                                sender.sendMessage("   §8File: ${info.fileName} §7- Use §e/addon load ${info.fileName}")
+                            }
+                            else -> {
+                                sender.sendMessage("$statusColor$statusSymbol §f${info.name} §7v${info.version} $statusColor[$statusText] §8(${info.id})")
+                            }
+                        }
                     }
                 }
+
+                "load" -> {
+                    if (!sender.hasPermission("swccore.addon.load")) {
+                        sender.sendMessage("§cYou don't have permission to load addons!")
+                        return@setExecutor true
+                    }
+
+                    if (args.size < 2) {
+                        sender.sendMessage("§cUsage: /addon load <filename>")
+                        sender.sendMessage("§7Example: /addon load MyAddon-1.0.jar")
+                        return@setExecutor true
+                    }
+
+                    val filename = args[1]
+                    sender.sendMessage("§7Loading addon from §e$filename§7...")
+
+                    if (addonManager.loadAddonByFilename(filename)) {
+                        sender.sendMessage("§aSuccessfully loaded addon from $filename")
+                        sender.sendMessage("§7Use §e/addon enable <id> §7to enable it")
+                    } else {
+                        sender.sendMessage("§cFailed to load addon from $filename")
+                        sender.sendMessage("§7Check console for errors")
+                    }
+                }
+
+                "unload" -> {
+                    if (!sender.hasPermission("swccore.addon.unload")) {
+                        sender.sendMessage("§cYou don't have permission to unload addons!")
+                        return@setExecutor true
+                    }
+
+                    if (args.size < 2) {
+                        sender.sendMessage("§cUsage: /addon unload <id>")
+                        return@setExecutor true
+                    }
+
+                    val addonId = args[1]
+
+                    if (!addonManager.isAddonLoaded(addonId)) {
+                        sender.sendMessage("§cAddon not found: $addonId")
+                        return@setExecutor true
+                    }
+
+                    sender.sendMessage("§7Unloading addon §e$addonId§7...")
+
+                    if (addonManager.unloadAddon(addonId)) {
+                        sender.sendMessage("§aSuccessfully unloaded addon: $addonId")
+                        sender.sendMessage("§7The addon has been removed from memory")
+                    } else {
+                        sender.sendMessage("§cFailed to unload addon: $addonId")
+                        sender.sendMessage("§7Check console for errors")
+                    }
+                }
+
                 "info" -> {
+                    if (!sender.hasPermission("swccore.addon.info")) {
+                        sender.sendMessage("§cYou don't have permission to view addon info!")
+                        return@setExecutor true
+                    }
+
                     if (args.size < 2) {
                         sender.sendMessage("§cUsage: /addon info <id>")
                         return@setExecutor true
@@ -209,21 +309,150 @@ class Startup : JavaPlugin() {
                         return@setExecutor true
                     }
 
+                    val state = addonManager.getAddonState(addon.id)
+                    val stateColor = when (state) {
+                        AddonManager.AddonState.ENABLED -> "§a"
+                        AddonManager.AddonState.DISABLED -> "§7"
+                        AddonManager.AddonState.LOADED -> "§e"
+                        AddonManager.AddonState.UNLOADED -> "§b"
+                        AddonManager.AddonState.FAILED -> "§c"
+                        null -> "§8"
+                    }
+
                     sender.sendMessage("§e=== ${addon.name} ===")
                     sender.sendMessage("§7ID: §f${addon.id}")
                     sender.sendMessage("§7Version: §f${addon.version}")
                     sender.sendMessage("§7Authors: §f${addon.authors.joinToString(", ")}")
                     sender.sendMessage("§7Description: §f${addon.description}")
+                    sender.sendMessage("§7Status: $stateColor${state?.name ?: "UNKNOWN"}")
                     if (addon.dependencies.isNotEmpty()) {
                         sender.sendMessage("§7Dependencies: §f${addon.dependencies.joinToString(", ")}")
                     }
                 }
+
+                "enable" -> {
+                    if (!sender.hasPermission("swccore.addon.enable")) {
+                        sender.sendMessage("§cYou don't have permission to enable addons!")
+                        return@setExecutor true
+                    }
+
+                    if (args.size < 2) {
+                        sender.sendMessage("§cUsage: /addon enable <id>")
+                        return@setExecutor true
+                    }
+
+                    val addonId = args[1]
+                    if (!addonManager.isAddonLoaded(addonId)) {
+                        sender.sendMessage("§cAddon not found: $addonId")
+                        sender.sendMessage("§7Use §e/addon list §7to see available addons")
+                        return@setExecutor true
+                    }
+
+                    if (addonManager.enableAddon(addonId)) {
+                        sender.sendMessage("§aEnabled addon: $addonId")
+                    } else {
+                        sender.sendMessage("§cFailed to enable addon: $addonId")
+                        sender.sendMessage("§7Check console for errors")
+                    }
+                }
+
+                "disable" -> {
+                    if (!sender.hasPermission("swccore.addon.disable")) {
+                        sender.sendMessage("§cYou don't have permission to disable addons!")
+                        return@setExecutor true
+                    }
+
+                    if (args.size < 2) {
+                        sender.sendMessage("§cUsage: /addon disable <id>")
+                        return@setExecutor true
+                    }
+
+                    val addonId = args[1]
+                    if (!addonManager.isAddonLoaded(addonId)) {
+                        sender.sendMessage("§cAddon not found: $addonId")
+                        return@setExecutor true
+                    }
+
+                    if (addonManager.disableAddon(addonId)) {
+                        sender.sendMessage("§aDisabled addon: $addonId")
+                    } else {
+                        sender.sendMessage("§cFailed to disable addon: $addonId")
+                        sender.sendMessage("§7Check console for errors")
+                    }
+                }
+
+                "reload" -> {
+                    if (!sender.hasPermission("swccore.addon.reload")) {
+                        sender.sendMessage("§cYou don't have permission to reload addons!")
+                        return@setExecutor true
+                    }
+
+                    if (args.size > 1) {
+                        val addonId = args[1]
+                        if (addonManager.reloadAddon(addonId)) {
+                            sender.sendMessage("§aReloaded addon: $addonId")
+                        } else {
+                            sender.sendMessage("§cFailed to reload addon: $addonId")
+                            sender.sendMessage("§7Check console for errors")
+                        }
+                    } else {
+                        sender.sendMessage("§7Reloading all addons...")
+                        addonManager.reloadAddons()
+                        sender.sendMessage("§aReloaded all addons")
+                    }
+                }
+
                 else -> {
-                    sender.sendMessage("§cUnknown subcommand. Use: list, reload, info")
+                    sender.sendMessage("§cUnknown subcommand: ${args[0]}")
+                    sender.sendMessage("§7Use §e/addon §7for help")
                 }
             }
 
             true
+        }
+
+        // Add tab completion
+        getCommand("addon")?.tabCompleter = org.bukkit.command.TabCompleter { sender, _, _, args ->
+            if (!sender.hasPermission("swccore.addon")) {
+                return@TabCompleter null
+            }
+
+            when (args.size) {
+                1 -> {
+                    val subcommands = mutableListOf<String>()
+                    if (sender.hasPermission("swccore.addon.list")) subcommands.add("list")
+                    if (sender.hasPermission("swccore.addon.info")) subcommands.add("info")
+                    if (sender.hasPermission("swccore.addon.load")) subcommands.add("load")
+                    if (sender.hasPermission("swccore.addon.unload")) subcommands.add("unload")
+                    if (sender.hasPermission("swccore.addon.enable")) subcommands.add("enable")
+                    if (sender.hasPermission("swccore.addon.disable")) subcommands.add("disable")
+                    if (sender.hasPermission("swccore.addon.reload")) subcommands.add("reload")
+
+                    subcommands.filter { it.startsWith(args[0].lowercase()) }
+                }
+                2 -> when (args[0].lowercase()) {
+                    "info", "enable", "disable", "reload" -> {
+                        if (sender.hasPermission("swccore.addon.${args[0].lowercase()}")) {
+                            addonManager.getAddons().map { it.id }
+                                .filter { it.startsWith(args[1].lowercase()) }
+                        } else null
+                    }
+                    "unload" -> {
+                        if (sender.hasPermission("swccore.addon.unload")) {
+                            addonManager.getAddons().map { it.id }
+                                .filter { it.startsWith(args[1].lowercase()) }
+                        } else null
+                    }
+                    "load" -> {
+                        if (sender.hasPermission("swccore.addon.load")) {
+                            addonManager.scanForNewAddons().map { it.name }
+                                .filter { it.startsWith(args[1].lowercase()) }
+                        } else null
+                    }
+                    else -> null
+                }
+                else -> null
+            }
         }
     }
 
