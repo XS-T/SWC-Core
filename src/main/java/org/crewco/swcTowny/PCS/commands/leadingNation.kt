@@ -1,7 +1,5 @@
-package org.crewco.swcTowny.commands
+package org.crewco.swcTowny.PCS.commands
 
-import com.palmergames.bukkit.towny.db.TownyDataSource
-import com.palmergames.bukkit.towny.`object`.TownyUniverse
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender

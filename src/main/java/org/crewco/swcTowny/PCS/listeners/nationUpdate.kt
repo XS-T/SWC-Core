@@ -1,4 +1,4 @@
-package org.crewco.swcTowny.listeners
+package org.crewco.swcTowny.PCS.listeners
 
 import com.palmergames.bukkit.towny.event.DeleteNationEvent
 import com.palmergames.bukkit.towny.event.NationAddTownEvent

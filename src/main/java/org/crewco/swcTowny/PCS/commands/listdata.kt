@@ -1,4 +1,4 @@
-package org.crewco.swcTowny.commands
+package org.crewco.swcTowny.PCS.commands
 
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor

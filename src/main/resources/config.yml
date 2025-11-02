@@ -50,3 +50,26 @@ resources:
 #    - Command: /claimresources (or whatever you register)
 #    - Items are added to player's inventory
 #    - Cooldown applies per-world, per-nation
+
+# ===============================================
+#              Bounty Config
+# ===============================================
+
+# Default expiration time for bounties
+# Use d = days, h = hours, m = minutes, s = seconds (e.g., "1d 2h", "3h 30m", "45m")
+default-expiry: "1d"
+
+# Maximum bounty expiration time
+# Max time a bounty is allowed to live before auto-expiring
+# Also in d/h/m/s format
+max-expiry: "3d"
+
+# How often (in seconds) to update the hunter's compass direction
+# Minimum is 5 seconds
+tracking-update-seconds: 15
+
+# Minimum Bounty Amount
+bounty-amount: 500
+
+# Approx Target Location Range
+atl-amount: 10.0 # Default is 10 blocks

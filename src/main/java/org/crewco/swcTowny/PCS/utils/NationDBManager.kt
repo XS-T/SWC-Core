@@ -1,4 +1,4 @@
-package org.crewco.swcTowny.utils
+package org.crewco.swcTowny.PCS.utils
 
 import com.palmergames.bukkit.towny.`object`.Nation
 import com.palmergames.bukkit.towny.`object`.Resident

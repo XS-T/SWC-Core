@@ -1,4 +1,4 @@
-package org.crewco.swcTowny.commands
+package org.crewco.swcTowny.PCS.commands
 
 import com.palmergames.bukkit.towny.`object`.TownyUniverse
 import org.bukkit.Material
@@ -11,9 +11,6 @@ import org.bukkit.inventory.ItemStack
 import org.crewco.swcTowny.Startup.Companion.nationDBMgr
 import org.crewco.swcTowny.Startup.Companion.plugin
 import net.minecraft.server.v1_7_R4.NBTTagCompound
-import net.minecraft.server.v1_7_R4.NBTTagList
-import net.minecraft.server.v1_7_R4.NBTTagString
-import org.bukkit.material.Chest
 import java.lang.System.currentTimeMillis
 
 class claimResources : CommandExecutor {

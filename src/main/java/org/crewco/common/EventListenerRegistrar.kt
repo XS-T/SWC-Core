@@ -1,4 +1,4 @@
-package org.crewco.swcTowny.sysCommon
+package org.crewco.common
 
 import org.bukkit.event.Listener
 import org.bukkit.plugin.java.JavaPlugin

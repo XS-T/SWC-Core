@@ -67,6 +67,14 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Vault API -->
+        <dependency>
+            <groupId>com.github.MilkBowl</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Towny - using local jar -->
         <dependency>
             <groupId>com.palmergames.bukkit</groupId>

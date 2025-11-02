@@ -1,5 +1,5 @@
 // RecipeManager
-package org.crewco.swcTowny.sysCommon
+package org.crewco.common
 
 import org.bukkit.Bukkit
 import org.bukkit.Material

@@ -1,16 +1,15 @@
-package org.crewco.swcTowny.commands
+package org.crewco.swcTowny.Bounties.commands
 
-import org.bukkit.ChatColor
 import org.bukkit.command.Command
-import org.bukkit.command.CommandException
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender
+import org.crewco.common.Updater
 import org.crewco.swcTowny.Startup.Companion.plugin
-import org.crewco.swcTowny.sysCommon.Updater
 
-class swcTownyUpdate : CommandExecutor {
+
+class swcBountyUpdate : CommandExecutor {
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<out String>): Boolean {
-        if (!sender.hasPermission("swc.towny.admin.update")){return true}
+        if (!sender.hasPermission("swc.bounty.admin.update")){return true}
         val update = Updater
         if (!update.isUpdated()){
             update.checkAndUpdate(plugin)

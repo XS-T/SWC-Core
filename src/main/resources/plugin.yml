@@ -8,7 +8,7 @@ authors:
 depend: [Towny]
 
 commands:
-  reloadconfig:
+  reloadSwcConfig:
     description: Reload recipes command
     usage: /reloadconfig
   listdata:
@@ -22,3 +22,7 @@ commands:
     usage: /claimResources
   swcTownyUpdate:
     description: updates the plugin
+  bounty:
+    description: allows the player to set a bounty on another
+  swcBountyUpdate:
+    description: Allows an admin to update the plugin

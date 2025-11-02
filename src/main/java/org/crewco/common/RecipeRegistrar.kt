@@ -1,5 +1,5 @@
 // RecipeRegistrar
-package org.crewco.swcTowny.sysCommon
+package org.crewco.common
 
 import org.bukkit.Material
 import org.bukkit.configuration.file.FileConfiguration
