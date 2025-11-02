@@ -1,7 +1,7 @@
 package org.crewco.common
 
 import org.bukkit.command.CommandExecutor
-import org.crewco.swcTowny.Startup
+import org.crewco.swccore.Startup
 import kotlin.reflect.KClass
 
 object CommandRegistrar {

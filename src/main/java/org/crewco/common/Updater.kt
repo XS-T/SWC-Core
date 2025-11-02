@@ -1,6 +1,6 @@
 package org.crewco.common
 
-import org.crewco.swcTowny.Startup
+import org.crewco.swccore.Startup
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
