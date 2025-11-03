@@ -183,3 +183,4 @@ class ExampleAddon : Addon() {
 More in-depth addon setup <a href="https://github.com/XS-T/SWC-AddonTemplate">Here</a>
     
 </p>
+<p align="center"> Brought to you by the <b>CrewCo Team</b></p>
