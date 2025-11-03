@@ -11,6 +11,8 @@ import org.bukkit.inventory.ItemStack
 import org.crewco.swccore.Startup.Companion.nationDBMgr
 import org.crewco.swccore.Startup.Companion.plugin
 import net.minecraft.server.v1_7_R4.NBTTagCompound
+import org.bukkit.Bukkit
+import org.bukkit.Location
 import java.lang.System.currentTimeMillis
 
 class claimResources : CommandExecutor {
@@ -115,12 +117,18 @@ class claimResources : CommandExecutor {
             }
 
             // ✅ Instead of giving a chest item, spawn a filled chest block in front of the player
-            val chestLocation = player.location.clone().add(0.0, 0.0, 1.0) // one block in front
+            val resident = universe.getResident(player.name).town.homeBlock
+            val hb = resident.town.homeBlock
+            val hbX = hb.x.toDouble()
+            val hbz = hb.z.toDouble()
+            val world = Bukkit.getWorld(resident.town.world.name)
+            val homeBlockLocation = Location(world,hbX,1.0,hbz)
+            val chestLocation = homeBlockLocation // one block in front
             val block = chestLocation.block
 
             // Make sure the spot is clear
             if (block.type != Material.AIR) {
-                player.sendMessage("§cPlease clear the space in front of you first!")
+                player.sendMessage("§cPlease clear the space at your home block first")
                 return true
             }
 
