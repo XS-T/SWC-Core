@@ -183,4 +183,22 @@ class ExampleAddon : Addon() {
 More in-depth addon setup <a href="https://github.com/XS-T/SWC-AddonTemplate">Here</a>
     
 </p>
+
+Project Setup
+
+```bash
+<dependency>
+  <groupId>org.xs-t</groupId>
+  <artifactId>swc-core</artifactId>
+  <version>0.0.6-SNAPSHOT</version>
+</dependency>
+
+
+<repository>
+  <id>github</id>
+    <name>SWC-Core</name>
+    <url>https://maven.pkg.github.com/XS-T/SWC-Core</url>
+</repository>
+```
+
 <p align="center"> Brought to you by the <b>CrewCo Team</b></p>
