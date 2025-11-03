@@ -180,4 +180,6 @@ class ExampleAddon : Addon() {
 
 <p align="center">
 🧩 <b>SWC-Core</b> — The backbone of your plugin ecosystem. Modular. Powerful. Flexible.
+More in-depth addon setup <a href="https://github.com/XS-T/SWC-AddonTemplate">Here</a>
+    
 </p>
