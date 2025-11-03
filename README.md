@@ -116,7 +116,7 @@ id: swc-bounties
 name: SWC-Bounties
 version: 1.0.0
 main: net.crewco.bounties.BountiesAddon
-authors: [X ST]
+authors: [XST99]
 description: Adds a bounty system that integrates with SWC-Core
 dependencies: []
 ```
