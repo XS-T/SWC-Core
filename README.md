@@ -1,4 +1,4 @@
-# 🏰 SWC-Towny Hook
+# 🏰 SWC-Core
 
 A Towny integration plugin that enhances nation gameplay with claimable resources, admin tools, and performance stats.
 
