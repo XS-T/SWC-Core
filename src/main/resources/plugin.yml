@@ -4,7 +4,7 @@ main: org.crewco.swccore.Startup
 description: "A Template Plugin for 1.7.10"
 authors:
   - "XST99"
-depend: [Towny]
+depend: [Towny,Vault]
 
 commands:
   reloadSwcConfig:

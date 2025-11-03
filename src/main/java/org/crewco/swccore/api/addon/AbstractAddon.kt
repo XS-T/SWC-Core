@@ -1,19 +1,96 @@
 package org.crewco.swccore.api.addon
 
+import net.milkbowl.vault.economy.Economy
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.TabCompleter
+import org.bukkit.configuration.file.YamlConfiguration
 import org.bukkit.event.Listener
 import org.bukkit.plugin.Plugin
+import org.crewco.swccore.Startup
 import org.crewco.swccore.system.managers.CommandManager
 import org.crewco.swccore.system.managers.subclasses.SimpleCommand
 import java.io.File
+import java.io.InputStreamReader
 import java.util.logging.Logger
 
 /**
  * Abstract base class that provides common functionality for addons.
  * Addon developers can extend this class for convenience.
+ * Automatically reads addon metadata from manifest.yml
  */
 abstract class AbstractAddon(override val plugin: Plugin) : Addon {
+
+    /**
+     * Automatically load manifest.yml from the addon JAR
+     */
+    private val manifest: YamlConfiguration by lazy {
+        try {
+            val classLoader = this::class.java.classLoader
+            val manifestStream = classLoader.getResourceAsStream("manifest.yml")
+                ?: throw IllegalStateException("manifest.yml not found in addon JAR")
+
+            YamlConfiguration.loadConfiguration(InputStreamReader(manifestStream))
+        } catch (e: Exception) {
+            throw IllegalStateException("Failed to load manifest.yml: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Addon ID - must be provided by subclass
+     * Can optionally be read from manifest.yml if specified there
+     */
+    override val id: String by lazy {
+        manifest.getString("id") ?: generateIdFromName()
+    }
+
+    /**
+     * Auto-populate name from manifest.yml
+     */
+    override val name: String by lazy {
+        manifest.getString("name") ?: this::class.java.simpleName
+    }
+
+    /**
+     * Auto-populate version from manifest.yml
+     */
+    override val version: String by lazy {
+        manifest.getString("version") ?: "Unknown"
+    }
+
+    /**
+     * Auto-populate description from manifest.yml
+     */
+    override val description: String by lazy {
+        manifest.getString("description") ?: ""
+    }
+
+    /**
+     * Auto-populate authors from manifest.yml
+     * Supports both 'authors' list and single 'author' field
+     */
+    override val authors: List<String> by lazy {
+        manifest.getStringList("authors").takeIf { it.isNotEmpty() }
+            ?: listOf(manifest.getString("author") ?: "Unknown")
+    }
+
+    /**
+     * Auto-populate dependencies from manifest.yml
+     */
+    override val dependencies: List<String> by lazy {
+        manifest.getStringList("dependencies")
+    }
+
+    /**
+     * Generate ID from name if not specified in manifest
+     * Converts "My Addon Name" to "my-addon-name"
+     */
+    private fun generateIdFromName(): String {
+        return manifest.getString("name")
+            ?.lowercase()
+            ?.replace(Regex("[^a-z0-9]+"), "-")
+            ?.trim('-')
+            ?: this::class.java.simpleName.lowercase()
+    }
 
     /**
      * Logger instance for this addon
@@ -85,6 +162,12 @@ abstract class AbstractAddon(override val plugin: Plugin) : Addon {
     override fun onReload() {
         logger.info("Reloading addon: $name")
     }
+
+
+    override val pluginDependencies: List<String> by lazy {
+        manifest.getStringList("plugin-dependencies")
+    }
+
 
     /**
      * Helper method to register multiple event listeners at once
@@ -161,15 +244,75 @@ abstract class AbstractAddon(override val plugin: Plugin) : Addon {
     /**
      * Helper method to log warning messages
      */
-     fun logWarning(message: String) {
+    fun logWarning(message: String) {
         logger.warning("[$name] $message")
     }
 
     /**
      * Helper method to log error messages
      */
-     fun logError(message: String, throwable: Throwable? = null) {
+    fun logError(message: String, throwable: Throwable? = null) {
         logger.severe("[$name] $message")
         throwable?.printStackTrace()
     }
+
+    // Deps Handling
+    protected val swcCore: Startup by lazy {
+        plugin as Startup
+    }
+
+    // Plugin API getters with null safety
+
+    /**
+     * Get a plugin instance safely
+     */
+    protected fun <T : Plugin> getPluginDependency(pluginName: String, clazz: Class<T>): T? {
+        val pluginInstance = plugin.server.pluginManager.getPlugin(pluginName)
+        return if (pluginInstance != null && pluginInstance.isEnabled && clazz.isInstance(pluginInstance)) {
+            clazz.cast(pluginInstance)
+        } else {
+            null
+        }
+    }
+
+    /**
+     * Check if a plugin dependency is loaded and enabled
+     * This checks the actual server state, not the manifest
+     */
+    protected fun hasPluginDependency(addon: Plugin,pluginName: String): Boolean {
+        val pluginInstance = plugin.server.pluginManager.getPlugin(pluginName)
+        return pluginInstance != null && pluginInstance.isEnabled
+    }
+
+    /**
+     * Get all available plugin dependencies
+     * Returns list of plugins declared in manifest that are currently available
+     */
+    protected fun getAvailablePluginDependencies(addon:Plugin): List<String> {
+        return pluginDependencies.filter { hasPluginDependency(addon,it) }
+    }
+
+    /**
+     * Get all missing plugin dependencies
+     * Returns list of plugins declared in manifest but not available on server
+     */
+    protected fun getMissingPluginDependencies(addon:Plugin): List<String> {
+        return pluginDependencies.filter { !hasPluginDependency(addon,it) }
+    }
+
+
+    /**
+     * Get PlaceholderAPI if available
+     */
+    protected fun getVaultAPI(addon:Plugin): Economy? {
+        return if (hasPluginDependency(addon,"Vault")) {
+            try {
+                Economy::class.java.newInstance()
+            } catch (e: Exception) {
+                null
+            }
+        } else null
+    }
+
+
 }

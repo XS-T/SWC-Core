@@ -1,56 +1,38 @@
-# SWC-Towny Hook
-----------------
-# Commands
- - /claimResources
-    - swc.towny.claimResources
-- /claimResourcesAdmin
-   - swc.towny.claimResources.admin
- - /listData
-    - swc.towny.admin.listData
- - /leadingNation
-    - swc.towny.leadingNation 
- - /reloadconfig
-    - swc.towny.admin.reload
-------------------
+# 🏰 SWC-Towny Hook
 
-# Description
-------------------
-/claimResources -> Lets the King of the nation claim pre-configured world resources once every week or the
-configured time
-
-/claimResourcesAdmin -> Lets the Admins claim the resources(Mainly used for testing)
-
-/listData -> list Nation Data, for admins only
-
-/leadingNation -> Shows the current leading nation in each world(Calculates xTowns and xTotalBlocks)
-
-/reloadconfig -> reloads the config for admins only
-
-# SWC-Bounties
-
--------
-
-# Commands
-
--------
-
-- /bounty help - returns the help menu
-- /bounty place <target> <amount> <expire>
-- /bounty remove <target>
-- /bounty track <target> <- Can be Admin only(Cause its setup in the board)
-- /bounty random <- Admin only
-- /bounty board
-- /bounty claim <- Admin Only
-- /bounty info
-
----
-# Permissions
+A Towny integration plugin that enhances nation gameplay with claimable resources, admin tools, and performance stats.
 
 ---
 
-- swcb.bounty.place
-- swcb.admin.bounty.remove
-- swcb.bounty.track
-- swcb.bounty.board
-- swcb.admin.bounty.claim
+## ⚙️ Commands & Permissions
 
+```yaml
+/claimResources                # 💎 Allows nation kings to claim configured world resources
+Permission: swc.towny.claimResources
+
+/claimResourcesAdmin           # 🧪 Allows admins to claim resources (mainly for testing)
+Permission: swc.towny.claimResources.admin
+
+/listData                      # 📋 Lists nation data (admin only)
+Permission: swc.towny.admin.listData
+
+/leadingNation                 # 🏆 Displays the current leading nation in each world
+Permission: swc.towny.leadingNation
+
+/reloadconfig                  # 🔁 Reloads the plugin configuration (admin only)
+Permission: swc.towny.admin.reload
+```
+
+---
+
+## 📜 Description
+
+- **/claimResources** → Lets the King of a nation claim pre-configured world resources once every week *(or the configured interval)*.
+- **/claimResourcesAdmin** → Used by Admins to test or bypass claim restrictions.
+- **/listData** → Lists nation data for administrative monitoring.
+- **/leadingNation** → Displays the top nations per world based on Town count and total block ownership.
+- **/reloadconfig** → Reloads configuration files without restarting the server.
+
+---
+
+⚔️ **Empower your nations. Manage your worlds. Lead your empire.**

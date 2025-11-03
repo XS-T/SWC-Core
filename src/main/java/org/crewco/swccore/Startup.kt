@@ -8,8 +8,8 @@ import org.crewco.common.CommandRegistrar
 import com.palmergames.bukkit.towny.`object`.TownyUniverse
 import net.milkbowl.vault.economy.Economy
 import org.bukkit.Bukkit
+import org.bukkit.ChatColor
 import org.bukkit.plugin.RegisteredServiceProvider
-import org.bukkit.plugin.ServicePriority
 import org.crewco.swccore.PCS.commands.claimResources
 import org.crewco.swccore.PCS.commands.leadingNation
 import org.crewco.swccore.PCS.commands.listdata
@@ -17,13 +17,6 @@ import org.crewco.swccore.PCS.commands.swcTownyUpdate
 import org.crewco.swccore.PCS.listeners.nationUpdate
 import org.crewco.common.CommandRegistrar.registerCommands
 import org.crewco.common.EventListenerRegistrar.registerListeners
-import org.crewco.common.Updater
-import org.crewco.swccore.Bounties.commands.bounty
-import org.crewco.swccore.Bounties.commands.swcBountyUpdate
-import org.crewco.swccore.Bounties.listeners.BountyBoardListener
-import org.crewco.swccore.Bounties.listeners.BountyListener
-import org.crewco.swccore.system.managers.BountyManager
-import org.crewco.swccore.Bounties.utils.api.bounty.BountyAPI
 import org.crewco.swccore.system.managers.AddonManager
 import org.crewco.swccore.PCS.utils.NationDBManager
 import org.crewco.swccore.system.commands.ReloadSwcConfig
@@ -37,9 +30,7 @@ class Startup : JavaPlugin() {
             private set
         lateinit var nationDBMgr: NationDBManager
         lateinit var economy: Economy
-        lateinit var bountyManager: BountyManager
         lateinit var sysMsg: String
-        lateinit var bountyAPI: BountyAPI
     }
 
     // Instance properties (not companion) - accessible to addons
@@ -54,36 +45,23 @@ class Startup : JavaPlugin() {
         // Initialize the addon manager
         addonManager = AddonManager(this)
         logger.info("AddonManager initialized")
-
-        // Load addons from the addons dir
-        val addonsFolder = File(dataFolder, "addons")
-        addonManager.loadAddonsFromDirectory(addonsFolder)
     }
 
     override fun onEnable() {
         super.onEnable()
         // Plugin startup logic
-        //Intilizers
-        //Updating Block
-        // if (!Updater.isUpdated()){
-        //     Updater.checkAndUpdate(this)
-        // }
+
+        sysMsg = ChatColor.translateAlternateColorCodes('&',"&7[&cSWC-Core&7]>")
+
+        // Load addons from the addons dir
+        val addonsFolder = File(dataFolder, "addons")
+        addonManager.loadAddonsFromDirectory(addonsFolder)
 
         CommandRegistrar.initialize(this)
         EventListenerRegistrar.initialize(this)
         RecipeRegistrar.initialize(this)
         plugin = this
         nationDBMgr = NationDBManager(plugin.dataFolder)
-
-        // Managers
-        bountyManager = BountyManager(this.config)
-        bountyManager.loadAndScheduleExpiryTasks()
-        bountyManager.loadTrackingData()
-
-        // Register API
-        bountyAPI = BountyAPI()
-        server.servicesManager.register(BountyAPI::class.java, bountyAPI,this,ServicePriority.Normal)
-        logger.info("BountyAPI v${description.version} enabled")
 
         // Init Vault
         if (!setupEconomy()) {
@@ -109,13 +87,13 @@ class Startup : JavaPlugin() {
         registerCommands(leadingNation::class)
         registerCommands(claimResources::class)
         registerCommands(swcTownyUpdate::class)
-        registerCommands(bounty::class,swcBountyUpdate::class)
+        //registerCommands(bounty::class,swcBountyUpdate::class)
         plugin.logger.info("Registered Commands")
 
         //register events
         plugin.logger.info("Registering Listeners")
         registerListeners(nationUpdate::class)
-        registerListeners(BountyListener::class, BountyBoardListener::class)
+        //registerListeners(BountyListener::class, BountyBoardListener::class)
         plugin.logger.info("Registered Listeners")
 
         //Gen Config
@@ -146,21 +124,6 @@ class Startup : JavaPlugin() {
         server.servicesManager.unregisterAll(this)
         importFromTowny(nationDBMgr)
         nationDBMgr.close()
-
-        // Persist tracking state to disk
-        bountyManager.saveTrackingData()
-
-        // Cancel all bounty expiry tasks
-        bountyManager.expiryTasks.values.forEach { it.cancel() }
-        bountyManager.expiryTasks.clear()
-
-        // Cancel all tracking tasks
-        bountyManager.trackingTasks.values.forEach { it.cancel() }
-        bountyManager.trackingTasks.clear()
-
-        // Close the database connection
-        bountyManager.close()
-
         logger.info("${description.name} has been disabled!")
     }
 
@@ -460,10 +423,8 @@ class Startup : JavaPlugin() {
         if (server.pluginManager.getPlugin("Vault") == null) {
             return false
         }
-        val rsp: RegisteredServiceProvider<Economy>? = server.servicesManager.getRegistration(Economy::class.java)
-        if (rsp == null) {
-            return false
-        }
+        val rsp: RegisteredServiceProvider<Economy> = server.servicesManager.getRegistration(Economy::class.java)
+            ?: return false
         economy = rsp.provider
         return true
     }

@@ -210,10 +210,19 @@ class AddonManager(private val plugin: Startup) {
             return false
         }
 
-        // Check dependencies
+        // Check addon dependencies
         for (dependency in addon.dependencies) {
             if (!isAddonLoaded(dependency)) {
-                plugin.logger.severe("Cannot load addon ${addon.id}: missing dependency $dependency")
+                plugin.logger.severe("Cannot load ${addon.id}: missing addon '$dependency'")
+                return false
+            }
+        }
+
+        // Check plugin dependencies
+        for (pluginDep in addon.pluginDependencies) {
+            val depPlugin = plugin.server.pluginManager.getPlugin(pluginDep)
+            if (depPlugin == null || !depPlugin.isEnabled) {
+                plugin.logger.severe("Cannot load ${addon.id}: missing plugin '$pluginDep'")
                 return false
             }
         }

@@ -41,6 +41,12 @@ interface Addon {
         get() = emptyList()
 
     /**
+     * Plugin Deps for Addons
+     */
+    val pluginDependencies: List<String>
+        get() = emptyList()
+
+    /**
      * Reference to the main plugin instance
      */
     val plugin: Plugin
